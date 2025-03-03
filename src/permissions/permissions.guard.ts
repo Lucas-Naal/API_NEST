@@ -27,8 +27,13 @@ export class PermissionsGuard implements CanActivate {
       throw new UnauthorizedException('No user found');
     }
 
+
     const userPermissions = user.role.permissions.map(permission => permission.name);
 
+    const hasAdminPermission = userPermissions.includes('administrador');
+    if (hasAdminPermission) {
+      return true;  
+    }
     const hasPermission = requiredPermissions.some(permission =>
       userPermissions.includes(permission),
     );
