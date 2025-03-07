@@ -8,6 +8,7 @@ import { RoleModule } from './roles/roles.module';
 import { PermissionModule } from './permissions/permission.module';
 import { EndpointModule } from './endpoints/endpoints.module';
 import { MailsModule } from './mails/mails.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { MailsModule } from './mails/mails.module';
     UserModule,
     PermissionModule,
     EndpointModule,
-    MailsModule
+    MailsModule,
+    LogModule
   ],
 })
 

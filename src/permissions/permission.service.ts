@@ -1,16 +1,20 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Permission } from './entities/permissions.entity';
 import { CreatePermissionDto } from './dto/create-permission-dto';
 import { UpdatePermissionDto } from './dto/update-permission-dto';
 import { Active_Permissions } from './entities/active_permissions_view';
+import { Role } from 'src/roles/entities/roles.entity';
 
 @Injectable()
 export class PermissionService {
     constructor(
         @InjectRepository(Permission)
         private readonly permissionRepository: Repository<Permission>,
+
+        @InjectRepository(Role)
+        private readonly roleRepository : Repository<Role>,
 
         @InjectRepository(Active_Permissions)
         private readonly active_permissionRepository: Repository<Active_Permissions>
@@ -115,6 +119,28 @@ export class PermissionService {
         const deletedpermission = await this.permissionRepository.save(permission);
 
         return deletedpermission;
+    }
+
+    async assignPermissionsToRole(roleId: number, permissionIds: number[]): Promise<Role> {
+        const role = await this.roleRepository.findOne({
+            where: { id: roleId },
+            relations: ['permissions'],  
+        });
+        if (!role) {
+            throw new NotFoundException(`Role with ID ${roleId} not found.`);
+        }
+
+        const permissions = await this.permissionRepository.find({
+            where: { id: In(permissionIds) },  
+        });
+        
+        if (permissions.length !== permissionIds.length) {
+            throw new NotFoundException('Some permissions not found.');
+        }
+        
+        role.permissions = permissions;
+
+        return await this.roleRepository.save(role);
     }
 
 }

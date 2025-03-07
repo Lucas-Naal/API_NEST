@@ -23,10 +23,13 @@ export class RoleController {
         type: CreateRoleDto,
     })
     async create(@Body() createRoleDto: CreateRoleDto): Promise<Role> {
-        const { name, permissions, is_active } = createRoleDto;
-
+        const { name, permissions = [], is_active } = createRoleDto; 
+    
         return this.roleService.createRole(name, permissions, is_active ?? true);
     }
+    
+
+
     @Put('edit/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

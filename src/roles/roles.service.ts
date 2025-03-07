@@ -20,7 +20,7 @@ export class RoleService {
     ) { }
 
 
-    async createRole(name: string, permissions: number[], is_active: boolean = true): Promise<Role> {
+    async createRole(name: string, permissions: number[] = [], is_active: boolean = true): Promise<Role> {
         const existingRole = await this.roleRepository.findOne({ where: { name } });
     
         if (existingRole) {
@@ -49,6 +49,7 @@ export class RoleService {
     
         return await this.roleRepository.save(newRole);
     }
+    
     
 
 

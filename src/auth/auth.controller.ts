@@ -20,7 +20,6 @@ export class AuthController {
     @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
     async login(@Body() loginDto: LoginDto) {
         const { email, password, recaptchaToken } = loginDto;
-        console.log(recaptchaToken);
 
         const user = await this.authService.validateUser(email, password, recaptchaToken);
 

@@ -5,6 +5,7 @@ import { CreatePermissionDto } from './dto/create-permission-dto';
 import { UpdatePermissionDto } from './dto/update-permission-dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
 import { Permission } from './entities/permissions.entity';
+import { AddPermissionsToRoleDto } from './dto/add-permissions-to-role.dto';
 
 @ApiTags('Permissions')
 @Controller('permissions')
@@ -19,6 +20,20 @@ export class PermissionController {
     @ApiResponse({ status: 400, description: 'Bad request.' })
     async create(@Body() createPermissionDto: CreatePermissionDto) {
         return this.permissionService.create(createPermissionDto);
+    }
+
+    @Post('add/permissionstorole')
+    @UseGuards(JwtAuthGuard) 
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Assign permissions to a role' })  
+    @ApiResponse({ status: 201, description: 'Permissions successfully assigned to the role.' })
+    @ApiResponse({ status: 400, description: 'Bad request.' })
+    @ApiResponse({ status: 404, description: 'Role or permissions not found.' })
+    async addPermissionsToRole(
+        @Body() addPermissionsToRoleDto: AddPermissionsToRoleDto 
+    ) {
+        const { roleId, permissionIds } = addPermissionsToRoleDto;
+        return this.permissionService.assignPermissionsToRole(roleId, permissionIds);
     }
 
     @Put('edit/:id')

@@ -194,15 +194,61 @@ async remove(ids: number | number[]): Promise<{ message: string }> {
   }
   
   
-  async findAll(): Promise<ActiveUsers_View[]> {
-    const users = await this.activeUserViewRepository.find({
-      order: {
-        id: 'ASC',  
-      },
-    });
-
-    return users;
+  async findAll(
+    startCreatedAt?: string,
+    endCreatedAt?: string,
+    exactCreatedAt?: string, 
+    startUpdatedAt?: string,
+    endUpdatedAt?: string,
+    exactUpdatedAt?: string, 
+    name?: string,
+    role?: string,
+    email?: string,
+    isActive?: boolean
+  ): Promise<ActiveUsers_View[]> {
+    const queryBuilder = this.activeUserViewRepository.createQueryBuilder('ActiveUsers_View');
+  
+    if (startCreatedAt && endCreatedAt) {
+      queryBuilder.andWhere(
+        'DATE(ActiveUsers_View.created_at) BETWEEN :startCreatedAt AND :endCreatedAt',
+        { startCreatedAt, endCreatedAt }
+      );
+    }
+  
+    if (exactCreatedAt) {
+      queryBuilder.andWhere('DATE(ActiveUsers_View.created_at) = :exactCreatedAt', { exactCreatedAt });
+    }
+  
+    if (startUpdatedAt && endUpdatedAt) {
+      queryBuilder.andWhere(
+        'DATE(ActiveUsers_View.updated_at) BETWEEN :startUpdatedAt AND :endUpdatedAt',
+        { startUpdatedAt, endUpdatedAt }
+      );
+    }
+  
+    if (exactUpdatedAt) {
+      queryBuilder.andWhere('DATE(ActiveUsers_View.updated_at) = :exactUpdatedAt', { exactUpdatedAt });
+    }
+  
+    if (name) {
+      queryBuilder.andWhere('LOWER(ActiveUsers_View.name) LIKE LOWER(:name)', { name: `%${name}%` });
+    }
+  
+    if (role) {
+      queryBuilder.andWhere('LOWER(ActiveUsers_View.role_name) LIKE LOWER(:role)', { role: `%${role}%` });
+    }
+  
+    if (email) {
+      queryBuilder.andWhere('LOWER(ActiveUsers_View.email) LIKE LOWER(:email)', { email: `%${email}%` });
+    }
+  
+    if (isActive !== undefined) {
+      queryBuilder.andWhere('ActiveUsers_View.is_active = :isActive', { isActive });
+    }
+  
+    return queryBuilder.orderBy('ActiveUsers_View.id', 'ASC').getMany();
   }
+  
 
 
   async requestPasswordReset(email: string, host: string) {

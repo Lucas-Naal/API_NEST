@@ -1,47 +1,32 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/entities/user.entity'; 
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly userService: UserService,
-  ) {}
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const requiredPermissions = this.reflector.get<string[]>('permissions', context.getHandler());
-
-    if (!requiredPermissions) {
+    if (user?.role?.name === 'administrador') {
       return true; 
     }
 
-    const request = context.switchToHttp().getRequest();
-    const user: User = request.user; 
+    const permissions = user?.permissions || [];
 
-    if (!user) {
-      throw new UnauthorizedException('No user found');
-    }
+    const requiredPermissions = this.getRequiredPermissions(context);
 
-
-    const userPermissions = user.role.permissions.map(permission => permission.name);
-
-    const hasAdminPermission = userPermissions.includes('administrador');
-    if (hasAdminPermission) {
-      return true;  
-    }
-    const hasPermission = requiredPermissions.some(permission =>
-      userPermissions.includes(permission),
+    const hasPermissions = requiredPermissions.every(permission =>
+      permissions.includes(permission)
     );
 
-    if (!hasPermission) {
-      throw new UnauthorizedException('Insufficient permissions');
+    if (!hasPermissions) {
+    
     }
 
-    return true;
+    return hasPermissions; 
+  }
+
+  private getRequiredPermissions(context: ExecutionContext): string[] {
+    const handler = context.getHandler();
+    return Reflect.getMetadata('permissions', handler) || [];
   }
 }

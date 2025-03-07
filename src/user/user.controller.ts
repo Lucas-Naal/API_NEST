@@ -150,9 +150,43 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all active users' })
   @ApiResponse({ status: 200, description: 'List of active users', type: [ActiveUsers_View] })
-  async findAll(): Promise<ActiveUsers_View[]> {
-    return this.userService.findAll();
+  @ApiQuery({ name: 'startCreatedAt', required: false, type: String, description: 'Start date for created_at filter' })
+  @ApiQuery({ name: 'endCreatedAt', required: false, type: String, description: 'End date for created_at filter' })
+  @ApiQuery({ name: 'exactCreatedAt', required: false, type: String, description: 'Exact date for created_at filter' })
+  @ApiQuery({ name: 'startUpdatedAt', required: false, type: String, description: 'Start date for updated_at filter' })
+  @ApiQuery({ name: 'endUpdatedAt', required: false, type: String, description: 'End date for updated_at filter' })
+  @ApiQuery({ name: 'exactUpdatedAt', required: false, type: String, description: 'Exact date for updated_at filter' })
+  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by user name' })
+  @ApiQuery({ name: 'role', required: false, type: String, description: 'Filter by role name' })
+  @ApiQuery({ name: 'email', required: false, type: String, description: 'Filter by email' })
+  @ApiQuery({ name: 'isActive', required: false, type: Boolean, description: 'Filter by active status' })
+  async findAll(
+    @Query('startCreatedAt') startCreatedAt?: string,
+    @Query('endCreatedAt') endCreatedAt?: string,
+    @Query('exactCreatedAt') exactCreatedAt?: string,
+    @Query('startUpdatedAt') startUpdatedAt?: string,
+    @Query('endUpdatedAt') endUpdatedAt?: string,
+    @Query('exactUpdatedAt') exactUpdatedAt?: string,
+    @Query('name') name?: string,
+    @Query('role') role?: string,
+    @Query('email') email?: string,
+    @Query('isActive') isActive?: boolean
+  ): Promise<ActiveUsers_View[]> {
+    return this.userService.findAll(
+      startCreatedAt,
+      endCreatedAt,
+      exactCreatedAt,
+      startUpdatedAt,
+      endUpdatedAt,
+      exactUpdatedAt,
+      name,
+      role,
+      email,
+      isActive
+    );
   }
+  
+  
 
   @Get('get/:id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
