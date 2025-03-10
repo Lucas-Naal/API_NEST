@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Query, NotFoundException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Query, NotFoundException, Req, Request } from '@nestjs/common';
 import { SetMetadata } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -10,11 +10,15 @@ import { AdminUserView } from './entities/admin_user_view';
 import { NonAdminUserView } from './entities/non_admin_users_view';
 import { ActiveUsers_View } from './entities/view_active_users';
 import { PermissionsGuard } from 'src/permissions/permissions.guard';
+import { LogService } from 'src/log/log.service';
 
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly logService: LogService
+  ){}
 
   @Post('add')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -24,8 +28,13 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User successfully created.' })
   @ApiResponse({ status: 400, description: 'Invalid data.' })
   @ApiBody({ description: 'Data to create a new user', type: CreateUserDto })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto, @Req() request: any) {
+    console.log(request.user); 
+    const userId = request.user.sub;
+    if (!userId) {
+      throw new Error('User ID is required for logging.');
+    }  
+    return this.userService.create(createUserDto, userId);
   }
 
   @Post('forgot-password')
@@ -54,8 +63,12 @@ export class UserController {
     type: UpdateUserDto,
   })
   @ApiParam({ name: 'id', description: 'User ID' })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  async update(
+    @Param('id') id: string, 
+    @Body() updateUserDto: UpdateUserDto, 
+    @Request() req: any  
+  ) {
+    return this.userService.update(+id, updateUserDto, req);
   }
 
   @Delete('delete/:id')
@@ -66,10 +79,10 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User successfully deleted.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.userService.remove(+id, req);
   }
-
+  
   @Put('activate/:id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @SetMetadata('permissions', ['actualizar estado'])
@@ -88,11 +101,8 @@ export class UserController {
       },
     },
   })
-  async updateStatus(
-    @Param('id') id: number,
-    @Body() updateUserDto: UpdateUserDto
-  ) {
-    return this.userService.updateStatus(id, updateUserDto);
+  updateStatus(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Request() req) {
+    return this.userService.updateStatus(+id, updateUserDto, req);
   }
 
   @Get('/getadmin')

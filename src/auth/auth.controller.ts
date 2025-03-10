@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
@@ -30,8 +30,8 @@ export class AuthController {
     async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDTO) {
         const { email } = forgotPasswordDto;
         const token = 'generated-reset-token';
-        const host = 'http://localhost:5173'; 
-    
+        const host = 'http://localhost:5173';
+
         try {
             await this.mailService.sendResetPasswordEmail(email, token, host);
             return { message: 'Si el correo existe, se ha enviado un correo con instrucciones para restablecer la contraseña.' };
@@ -40,6 +40,13 @@ export class AuthController {
             throw new Error('Hubo un error al procesar tu solicitud');
         }
     }
-    
+
+
+    @Get('profile')
+    getProfile(@Req() req) {
+        console.log('req.user:', req.user); 
+        return req.user; 
+    }
+
 
 }

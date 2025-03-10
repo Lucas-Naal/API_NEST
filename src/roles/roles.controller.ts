@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, NotFoundException, Request } from '@nestjs/common';
 import { RoleService } from './roles.service';
 import { Role } from './entities/roles.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
@@ -22,12 +22,17 @@ export class RoleController {
         description: 'Required data to create a role',
         type: CreateRoleDto,
     })
-    async create(@Body() createRoleDto: CreateRoleDto): Promise<Role> {
-        const { name, permissions = [], is_active } = createRoleDto; 
-    
-        return this.roleService.createRole(name, permissions, is_active ?? true);
+    async create(@Body() createRoleDto: CreateRoleDto, @Request() request: any) {
+        const { name, permissions = [], is_active } = createRoleDto;
+        const userId = request.user.sub;
+
+        if (!userId) {
+            throw new Error('User ID is required for logging.');
+        }
+
+        return this.roleService.createRole(name, permissions, is_active ?? true, userId);
     }
-    
+
 
 
     @Put('edit/:id')
@@ -45,13 +50,23 @@ export class RoleController {
                 value: {
                     name: 'Editor',
                     is_active: true,
-                    permissions: [1, 2, 3]
-                }
-            }
-        }
+                    permissions: [1, 2, 3],
+                },
+            },
+        },
     })
-    async update(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto): Promise<Role> {
-        return this.roleService.updateRole(id, updateRoleDto);
+    async update(
+        @Param('id') id: number,
+        @Body() updateRoleDto: UpdateRoleDto,
+        @Request() request: any,
+    ): Promise<Role> {
+        const userId = request.user.sub;
+
+        if (!userId) {
+            throw new Error('User ID is required for logging.');
+        }
+
+        return this.roleService.updateRole(id, updateRoleDto, userId);
     }
 
 
@@ -61,10 +76,18 @@ export class RoleController {
     @ApiOperation({ summary: 'Delete a role' })
     @ApiResponse({ status: 200, description: 'Role successfully deleted.' })
     @ApiResponse({ status: 404, description: 'Role not found.' })
-    async delete(@Param('id') id: number): Promise<{ message: string }> {
-        return this.roleService.deleteRole(id);
+    async delete(
+        @Param('id') id: number,
+        @Request() request: any,
+    ): Promise<{ message: string }> {
+        const userId = request.user.sub;
+
+        if (!userId) {
+            throw new Error('User ID is required for logging.');
+        }
+
+        return this.roleService.deleteRole(id, userId);
     }
-    
 
     @Put('activate/:id')
     @UseGuards(JwtAuthGuard)
@@ -77,17 +100,27 @@ export class RoleController {
         type: Object,
         examples: {
             example1: {
-                value: { is_active: true }
+                value: { is_active: true },
             },
             example2: {
-                value: { is_active: false }
-            }
-        }
+                value: { is_active: false },
+            },
+        },
     })
-    async updateStatus(@Param('id') id: number, @Body() updateRoleDto: { is_active: boolean }): Promise<{ message: string; roles: { id: number; is_active: boolean }[] }> {
-        return this.roleService.updateStatus(id, updateRoleDto);
+    async updateStatus(
+        @Param('id') id: number,
+        @Body() updateRoleDto: { is_active: boolean },
+        @Request() request: any,
+    ): Promise<{ message: string; roles: { id: number; is_active: boolean }[] }> {
+        const userId = request.user.sub;
+
+        if (!userId) {
+            throw new Error('User ID is required for logging.');
+        }
+
+        return this.roleService.updateStatus(id, updateRoleDto, userId);
     }
-    
+
 
 
 
@@ -124,8 +157,8 @@ export class RoleController {
             throw error;
         }
     }
-    
-    
+
+
 
     @Get('getbyid/:id')
     @UseGuards(JwtAuthGuard)

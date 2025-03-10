@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,12 +11,19 @@ import { AdminUserView } from './entities/admin_user_view';
 import { NonAdminUserView } from './entities/non_admin_users_view';
 import { ActiveUsers_View } from './entities/view_active_users';
 import { MailsService } from 'src/mails/mails.service';
+import { LogModule } from 'src/log/log.module';
+import { ModulesModule } from 'src/modules/modules.module';  
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role, AdminUserView, NonAdminUserView, ActiveUsers_View]), 
-  forwardRef(() => AuthModule), JwtModule],
+  imports: [
+    TypeOrmModule.forFeature([User, Role, AdminUserView, NonAdminUserView, ActiveUsers_View]),
+    forwardRef(() => AuthModule),
+    JwtModule,
+    forwardRef(() => LogModule),
+    ModulesModule, 
+  ],
   controllers: [UserController],
   providers: [UserService, JwtAuthGuard, MailsService],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}
