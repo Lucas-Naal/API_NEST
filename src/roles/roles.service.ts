@@ -175,7 +175,7 @@ export class RoleService {
     async updateStatus(ids: number | number[], updateRoleDto: UpdateRoleDto, userId: number): Promise<{ message: string; roles: { id: number; is_active: boolean }[] }> {
         const roleIds = Array.isArray(ids) ? ids : [ids];
 
-        const roles = await this.roleRepository.findByIds(roleIds);
+        const roles = await this.roleRepository.findBy({ id: In(roleIds) });
 
         if (roles.length !== roleIds.length) {
             throw new NotFoundException(`Some roles not found`);
@@ -200,7 +200,7 @@ export class RoleService {
 
                 role.is_active = updateRoleDto.is_active;
             }
-        });
+        }); 
 
         await this.roleRepository.save(roles);
 
