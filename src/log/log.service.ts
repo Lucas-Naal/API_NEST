@@ -60,5 +60,28 @@ export class LogService {
         return this.logRepository.save(log);
     }
 
+    async createPermissionLog(
+        usuario_id: number,
+        action_name: ActionType,
+        originalData: any,
+        updatedData: any
+    ): Promise<Log> {
+        const module = await this.modulesService.findOneByName('permissions');
+
+        if (!module) {
+            throw new NotFoundException('Module "permissions" not found');
+        }
+
+        const log = this.logRepository.create({
+            module: module,
+            usuario: { id: usuario_id } as any,
+            action_name: action_name,
+            original_data: originalData,
+            updated_data: updatedData,
+        });
+
+        return this.logRepository.save(log);
+    }
+
 
 }

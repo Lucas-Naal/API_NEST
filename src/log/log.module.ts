@@ -8,10 +8,11 @@ import { UserModule } from 'src/user/user.module';
 import { User } from 'src/user/entities/user.entity';
 import { ModulesService } from 'src/modules/modules.service';
 import { Role } from 'src/roles/entities/roles.entity';
+import { Permission } from 'src/permissions/entities/permissions.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Log, User, Role]),
+    TypeOrmModule.forFeature([Log, User, Role, Permission]),
     ModulesModule,  
     forwardRef(() => UserModule),
   ],

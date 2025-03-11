@@ -8,7 +8,6 @@
 // export class LogController {
 //     constructor(private readonly logService: LogService) { }
 
-//     // Ruta para obtener los logs por usuario
 //     @Get('user/:userId')
 //     async getLogsByUser(@Param('userId') userId: number): Promise<Log[]> {
 //         const logs = await this.logService.getLogsByUser(userId);
@@ -18,7 +17,6 @@
 //         return logs;
 //     }
 
-//     // Ruta para obtener los logs por módulo
 //     @Get('module/:moduleId')
 //     async getLogsByModule(@Param('moduleId') moduleId: number): Promise<Log[]> {
 //         const logs = await this.logService.getLogsByModule(moduleId);
@@ -28,7 +26,6 @@
 //         return logs;
 //     }
 
-//     // Ruta para crear un nuevo log
 //     @Post()
 //     async createLog(@Body() createLogDto: CreateLogDto): Promise<Log> {
 //         return this.logService.createLog(createLogDto);

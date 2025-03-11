@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, Request } from '@nestjs/common';
 import { PermissionService } from './permission.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { CreatePermissionDto } from './dto/create-permission-dto';
 import { UpdatePermissionDto } from './dto/update-permission-dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
@@ -18,9 +18,13 @@ export class PermissionController {
     @ApiOperation({ summary: 'Create a new permission' })
     @ApiResponse({ status: 201, description: 'The permission has been successfully created.' })
     @ApiResponse({ status: 400, description: 'Bad request.' })
-    async create(@Body() createPermissionDto: CreatePermissionDto) {
-        return this.permissionService.create(createPermissionDto);
+    async create(
+        @Body() createPermissionDto: CreatePermissionDto, 
+        @Request() req 
+    ) {
+        return this.permissionService.create(createPermissionDto, req.user.sub); 
     }
+
 
     @Post('add/permissionstorole')
     @UseGuards(JwtAuthGuard) 
@@ -42,10 +46,13 @@ export class PermissionController {
     @ApiOperation({ summary: 'Update an existing permission' })
     @ApiResponse({ status: 200, description: 'The permission has been successfully updated.' })
     @ApiResponse({ status: 404, description: 'Permission not found.' })
-    async update(@Param('id') id: number, @Body() updatePermissionDto: UpdatePermissionDto) {
-        return this.permissionService.update(id, updatePermissionDto);
+    async update(
+        @Param('id') id: number,
+        @Body() updatePermissionDto: UpdatePermissionDto,
+        @Request() req,  
+    ) {
+        return this.permissionService.update(id, updatePermissionDto, req.user.sub); 
     }
-    
 
     @Delete('delete/:id')
     @UseGuards(JwtAuthGuard)
@@ -72,9 +79,9 @@ export class PermissionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Activate or deactivate a permission (toggle the is_active field)' })
-    @ApiResponse({ 
-        status: 200, 
-        description: 'The permission has been successfully.',
+    @ApiResponse({
+        status: 200,
+        description: 'The permission has been successfully updated.',
         schema: {
             example: {
                 is_active: true,
@@ -83,10 +90,32 @@ export class PermissionController {
     })
     @ApiResponse({ status: 400, description: 'Cannot activate/deactivate a deleted permission.' })
     @ApiResponse({ status: 404, description: 'Permission not found.' })
-    async activate(@Param('id') id: number): Promise<Permission> {
-        return await this.permissionService.activate(id); 
+    @ApiBody({
+        description: 'Body to set the permission status as active or inactive',
+        type: Object,
+        examples: {
+            example1: {
+                value: { is_active: true },
+            },
+            example2: {
+                value: { is_active: false },
+            },
+        },
+    })
+    async updateStatus(
+        @Param('id') id: number,
+        @Body() updatePermissionDto: { is_active: boolean },
+        @Request() request: any,
+    ): Promise<Permission> {
+        const userId = request.user.sub; 
+    
+        if (!userId) {
+            throw new Error('User ID is required for logging.');
+        }
+    
+        return this.permissionService.updateStatus(id, updatePermissionDto, userId);
     }
-
+    
     @Get('get')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

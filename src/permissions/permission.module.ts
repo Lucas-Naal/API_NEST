@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Permission } from './entities/permissions.entity';
 import { PermissionController } from './permission.controller';
@@ -7,6 +7,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { Active_Permissions } from './entities/active_permissions_view';
 import { RoleModule } from 'src/roles/roles.module';
+import { LogModule } from 'src/log/log.module';
+import { ModulesModule } from 'src/modules/modules.module';
 
 @Module({
     imports: [
@@ -14,6 +16,8 @@ import { RoleModule } from 'src/roles/roles.module';
         AuthModule,
         JwtModule,
         RoleModule,
+        forwardRef(() => LogModule),
+        ModulesModule,
     ],
     controllers: [PermissionController],
     providers: [PermissionService],
