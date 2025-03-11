@@ -83,5 +83,19 @@ export class LogService {
         return this.logRepository.save(log);
     }
 
+    async getUserLogs(): Promise<Log[]> {
+        return this.logRepository.query('SELECT id, usuario_id, module_name, action_name, original_data, updated_data, created_at FROM users_logs_view');
+    }
+    
+    async getRoleLogs(): Promise<Log[]> {
+        return this.logRepository.query('SELECT id, usuario_id, module_name, action_name, original_data, updated_data, created_at FROM roles_logs_view');
+    }
+    
+    async getPermissionLogs(): Promise<Log[]> {
+        return this.logRepository.query('SELECT id, usuario_id, module_name, action_name, original_data, updated_data, created_at FROM permissions_logs_view');
+    }
+    
+    
+
 
 }

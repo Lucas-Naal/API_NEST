@@ -1,33 +1,38 @@
-// import { Controller, Post, Body, Get, Param, NotFoundException } from '@nestjs/common';
-// import { LogService } from './log.service';
-// import { Log } from './entities/log.entity';
-// import { CreateLogDto } from './dto/create-log.dto'; // DTO para la creación de logs
-// import { ActionType } from './dto/action-type.enum'; // Enum para las acciones posibles
+import { Controller, Post, Body, Get, Param, NotFoundException, UseGuards, Query } from '@nestjs/common';
+import { LogService } from './log.service';
+import { Log } from './entities/log.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-// @Controller('logs')
-// export class LogController {
-//     constructor(private readonly logService: LogService) { }
+@Controller('logs')
+export class LogController {
+    constructor(private readonly logService: LogService) { }
 
-//     @Get('user/:userId')
-//     async getLogsByUser(@Param('userId') userId: number): Promise<Log[]> {
-//         const logs = await this.logService.getLogsByUser(userId);
-//         if (!logs || logs.length === 0) {
-//             throw new NotFoundException(`Logs not found for user with ID ${userId}`);
-//         }
-//         return logs;
-//     }
-
-//     @Get('module/:moduleId')
-//     async getLogsByModule(@Param('moduleId') moduleId: number): Promise<Log[]> {
-//         const logs = await this.logService.getLogsByModule(moduleId);
-//         if (!logs || logs.length === 0) {
-//             throw new NotFoundException(`Logs not found for module with ID ${moduleId}`);
-//         }
-//         return logs;
-//     }
-
-//     @Post()
-//     async createLog(@Body() createLogDto: CreateLogDto): Promise<Log> {
-//         return this.logService.createLog(createLogDto);
-//     }
-// }
+    @Get('logs/users')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all user logs' })
+    @ApiResponse({ status: 200, description: 'User logs retrieved successfully.' })
+    async getUserLogs(): Promise<Log[]> {
+        return this.logService.getUserLogs();
+    }
+    
+    @Get('logs/roles')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all role logs' })
+    @ApiResponse({ status: 200, description: 'Role logs retrieved successfully.' })
+    async getRoleLogs(): Promise<Log[]> {
+        return this.logService.getRoleLogs();
+    }
+    
+    @Get('logs/permissions')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all permission logs' })
+    @ApiResponse({ status: 200, description: 'Permission logs retrieved successfully.' })
+    async getPermissionLogs(): Promise<Log[]> {
+        return this.logService.getPermissionLogs();
+    }
+    
+}

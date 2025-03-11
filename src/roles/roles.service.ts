@@ -194,7 +194,7 @@ export class RoleService {
                 this.logService.createLogRol(
                     userId,
                     actionType,
-                    [originalRole],
+                    originalRole,
                     { ...role, is_active: updateRoleDto.is_active }
                 );
 
